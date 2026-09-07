@@ -1,0 +1,46 @@
+# ================================================
+# PACKERSMART BACKEND .gitignore
+# ================================================
+
+# --- Dependencies ---
+node_modules/
+
+# --- Environment secrets (NEVER commit .env with passwords!) ---
+.env
+.env.local
+.env.*.local
+
+# --- Database files (local-only, contains real user data) ---
+# SQLite (legacy, we now use MySQL but keep in case of tests)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+src/*.db
+
+# MySQL dump files if you export locally
+*.sql
+!schema.sql
+!seed.sql
+
+# --- Logs ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Build output ---
+dist/
+build/
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

@@ -1,0 +1,104 @@
+# ================================================
+# PACKERSMART MVP - Root .gitignore
+# Covers both /backend and /frontend
+# ================================================
+
+# ================================================
+# DEPENDENCIES (node_modules across whole repo)
+# ================================================
+node_modules/
+**/node_modules/
+
+# ================================================
+# ENVIRONMENT + SECRETS (NEVER commit these)
+# ================================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*.pem
+*.key
+*.crt
+
+# ================================================
+# DATABASE FILES (local-only, real user data)
+# ================================================
+# SQLite (anywhere in repo)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Raw SQL dumps with sensitive data
+*.sql
+!**/schema.sql
+!**/seed.sql
+
+# ================================================
+# BUILD OUTPUT
+# ================================================
+dist/
+build/
+dist-ssr/
+.vite/
+**/.vite/
+.cache/
+.parcel-cache/
+
+# ================================================
+# LOGS
+# ================================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ================================================
+# TEST + COVERAGE
+# ================================================
+coverage/
+.nyc_output/
+*.lcov
+
+# ================================================
+# EDITOR / IDE SETTINGS (per-user, not shared)
+# ================================================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.iml
+*.iws
+*.ipr
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+.c9/
+*.launch
+*.sublime-workspace
+*.sublime-project
+
+# ================================================
+# OS JUNK
+# ================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ================================================
+# LOCKFILES NOTE
+# ================================================
+# KEEP: package-lock.json (committed so CI/devs get identical installs)
+# If you ever want to switch to yarn, commit yarn.lock instead.
