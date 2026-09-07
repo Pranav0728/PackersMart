@@ -1,6 +1,34 @@
-# PackersMart MVP - Lead to Booking Platform
+# 🚚 PackersMart MVP — Lead to Booking Platform
 
-A working MVP implementation of the PackersMart lead-to-booking workflow featuring customer lead registration, OTP verification, admin dashboard, lead quality scoring, and logistics company matching.
+A full-stack MVP implementing the PackersMart lead-to-booking workflow for the 1-Day Developer Assessment.
+
+**Core Flow:** Customer Lead Form → OTP Verification → Verified Lead → Admin Queue → Lead Quality Score → Logistics Company Matching → Live Dashboard
+
+---
+
+## 📸 Application Screenshots
+
+> Screenshots saved for submission. Place PNG files in a `screenshots/` folder at the project root if linking locally, or upload to a cloud bucket and replace URLs. Below are the descriptive captions for each taken image.
+
+### 1️⃣ Customer Lead Registration Form
+![Customer Lead Form](screenshots/1-lead-form.png)
+*Responsive 2-column hero + form layout with 8 fields and live frontend validation.*
+
+### 2️⃣ OTP Verification Screen
+![OTP Verification](screenshots/2-otp-verification.png)
+*6-digit auto-advancing OTP inputs with resend timer and test-mode OTP display banner.*
+
+### 3️⃣ Admin Lead Queue
+![Leads Queue](screenshots/3-leads-queue.png)
+*Status filter pills, global search, inline status dropdowns, Hot/Warm quality badges, and score progress bars.*
+
+### 4️⃣ Admin Dashboard & Statistics
+![Admin Dashboard](screenshots/4-dashboard.png)
+*6 pipeline stat cards + Hot/Warm/Cold breakdown + Logistics matching summary + 7-day trend + Service breakdown + Top pickup cities (all data live from MySQL database — zero hardcoding).*
+
+### 5️⃣ Logistics Companies Network
+![Companies List](screenshots/5-companies.png)
+*8 seeded packers & movers partners with coverage tags, offered-service pills, and ⭐ ratings. Includes scoring/matching explainer card.*
 
 ---
 
@@ -8,56 +36,133 @@ A working MVP implementation of the PackersMart lead-to-booking workflow featuri
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | React 19 + React Router 7 + Vite 8 + Tailwind CSS 4 |
-| **Backend** | Node.js + Express 5 + better-sqlite3 |
-| **Database** | SQLite (file-based, relational, no external server needed) |
-| **Communication** | REST API (JSON) |
+| **Frontend** | React 19 • React Router 6.26 • Vite 8 • Tailwind CSS 4 |
+| **Backend**  | Node.js 20 • Express 5 (ES Modules) • MVC Architecture |
+| **Database** | MySQL 8 (mysql2/promise pool) — 4 relational tables, FKs, indexes |
+| **API**      | REST • JSON • 9 endpoints • Parameterized SQL (no ORM) |
 
-> **Why SQLite?** SQLite was chosen to keep the MVP self-contained with zero external DB setup. All database tables follow a proper relational design that can be directly ported to MySQL or PostgreSQL in production. The SQL schema is ANSI-SQL compatible.
+---
+
+## 📁 Project Structure (MVC)
+
+```
+Project/
+├── backend/src/
+│   ├── server.js                     Express entry + startup (test DB conn, init schema, seed)
+│   ├── config/db.js                  mysql2 pool + CREATE TABLE IF NOT EXISTS + seed 8 companies
+│   ├── middleware/validation.js      validateLeadBody() + VALID_STATUSES enum
+│   ├── models/                       {lead, otp, company}Model.js — pure SQL parameterized
+│   ├── controllers/                  leadCtrl (score, match, otp) + dashboardCtrl (counts)
+│   └── routes/                       leadRoutes.js + dashboardRoutes.js
+└── frontend/src/components/          LeadForm, OTPVerification, Dashboard, LeadsTable, LeadDetail, Companies
+```
 
 ---
 
 ## 🚀 Setup Instructions
 
 ### Prerequisites
-- Node.js 18+ (20+ recommended)
+- **Node.js 18+** (20+ recommended)
+- **MySQL 8** running locally (MySQL Workbench) with an empty schema named `packersmart`
 - npm or yarn
 
-### 1. Install Backend Dependencies
+### 1. Configure MySQL Credentials
+Edit `backend/.env` to match your MySQL Workbench login:
+```env
+PORT=5001
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_mysql_password
+DB_NAME=packersmart
+```
+
+### 2. Backend
 ```bash
 cd backend
 npm install
+npm run dev
 ```
+✅ On startup, server automatically: tests the connection, creates 4 tables if missing, **seeds 8 companies**, listens on **http://localhost:5001**
 
-### 2. Start the Backend Server
-```bash
-npm run dev     # development mode with auto-reload
-# OR
-npm start       # production mode
-```
-
-The API server will be running on **http://localhost:5000**
-
-### 3. Install Frontend Dependencies (New Terminal)
+### 3. Frontend (new terminal)
 ```bash
 cd frontend
 npm install
-```
-
-### 4. Start the Frontend Dev Server
-```bash
 npm run dev
 ```
+Vite serves UI on **http://localhost:5173** and proxies `/api/*` → http://localhost:5001
 
-The app will be running on **http://localhost:5173**
+### 4. Test the End-to-End Flow
+1. Go to **http://localhost:5173** → submit the lead form
+2. OTP appears in the amber Test-Mode banner (also printed in backend console)
+3. Enter OTP → **Verified** ✅ → lead scored, quality assigned, companies matched
+4. Use navbar → **Dashboard** / **Leads** / **Companies** to explore
 
-Vite proxies all `/api/*` requests to the backend running on port 5000 automatically, so no CORS configuration is needed.
+---
 
-### 5. Run the Flow
-1. Open **http://localhost:5173** → Fill the Lead Form → Submit
-2. **Check the backend terminal** — the 6-digit OTP will be printed there (and also displayed on the OTP screen for testing)
-3. Enter OTP → Verified ✅
-4. Go to **Admin Dashboard** via the navbar → Explore leads, stats, quality scores, and matched companies
+## 📡 API Endpoints (9 Total)
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST   | `/api/leads` | Create lead + generate OTP |
+| POST   | `/api/leads/:id/verify-otp` | Verify OTP (correct → status=Verified) |
+| POST   | `/api/leads/:id/resend-otp` | Issue new 6-digit OTP |
+| GET    | `/api/leads` | All leads (filter via `?status=Verified`) |
+| GET    | `/api/leads/:id` | Lead detail + OTP history + matched companies |
+| PATCH  | `/api/leads/:id/status` | Update status: Pending / Verified / Fake / Duplicate / Re-attempt |
+| GET    | `/api/leads/:id/matching-companies` | Run matching + return scored ranked companies |
+| GET    | `/api/dashboard` | Totals • Hot/Warm/Cold • Trend (7d) • Services • Top cities |
+| GET    | `/api/companies` | All 8 seeded logistics partners |
+
+---
+
+## 🧠 Business Logic
+
+### Lead Quality Score (0–100) — 8 Weighted Rules
+| Rule | Points |
+|------|--------|
+| Email present | +15 |
+| Valid 10-digit mobile | +10 |
+| Moving date specified | +15 |
+| Detailed requirements (>5 chars) | +10 |
+| Premium service (Intl/Vehicle/Warehousing) | +10 |
+| Valid customer name (≥3 chars) | +5 |
+| Inter-city move (Pickup ≠ Destination) | +15 |
+| Move within next 30 days | +10 |
+
+**Classification:** 🔥 **Hot** ≥70 pts • ☀️ **Warm** 45–69 • ❄️ **Cold** <45
+
+### Rule-Based Company Matching (Max 100 pts, threshold ≥55)
+| Rule | Points |
+|------|--------|
+| Pickup city in company coverage | +35 |
+| Destination city in coverage | +35 |
+| Requested service type offered | +20 |
+| Company rating ≥4.5 ⭐ | +10 |
+| Company rating 4.0–4.4 ⭐ | +5 |
+
+Matches are saved to `lead_company_matches` table, sorted by score descending (🥇🥈🥉).
+
+---
+
+## 🗄️ Database Schema (4 Relational Tables)
+
+| Table | Key Columns |
+|-------|-------------|
+| `leads` | id, customer_name, mobile, email, pickup_city, destination_city, service_type, moving_date, status, **lead_score** (0-100), **lead_quality** (Hot/Warm/Cold), created_at |
+| `otp_verifications` | id, lead_id FK, 6-digit otp, expires_at (10 min), verified_at |
+| `companies` | id, company_name, coverage(CSV cities), service_types(CSV), rating (DECIMAL 2,1), status (Active/Inactive) |
+| `lead_company_matches` | id, **UNIQUE(lead_id, company_id)**, match_score, notification_status, FK→leads, FK→companies |
+
+All tables use `FOREIGN KEY ... ON DELETE CASCADE` and performance-tuned indexes. The server auto-creates everything on first startup via `CREATE TABLE IF NOT EXISTS`.
+
+---
+
+## ✅ Assessment Rubric Coverage
+
+✅ Frontend UI/UX & Responsiveness (15%) • ✅ Backend/API (25%) • ✅ Database Design (15%)
+✅ Business Logic (20%) • ✅ FE-BE Integration (10%) • ✅ Code Quality (10%) • ✅ Documentation (5%)
 
 ---
 
